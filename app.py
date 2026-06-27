@@ -3,15 +3,12 @@ import streamlit as st
 import requests
 
 def fetch_poster(MAL_ID):
-    print(MAL_ID)
     jikan_url = "https://api.jikan.moe/v4/anime/{}/pictures".format(MAL_ID)
-    data = requests.get(jikan_url)
-    data = data.json()
-    # print(data)
     try:
+        data = requests.get(jikan_url, timeout=5).json()
         poster_url = data['data'][0]["jpg"]["large_image_url"]
-    except KeyError:
-        return False
+    except (requests.RequestException, KeyError, IndexError, TypeError, ValueError):
+        return None
     
     return poster_url
 
@@ -24,7 +21,7 @@ def recommend(anime):
     for i in distances[1:]:
         mal_id = animes.iloc[i[0]].MAL_ID
         url = fetch_poster(mal_id)
-        if url == False:
+        if not url:
             continue
         count+=1
         recommended_anime_posters.append(url)
