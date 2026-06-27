@@ -1,8 +1,8 @@
 *
 !.gitignore
 !app.py
-!anime_list.pkl
-!similarity.pkl
+anime_list.pkl
+similarity.pkl
 !requirements.txt
 !setup.sh
 !JupyterCode.ipynb
