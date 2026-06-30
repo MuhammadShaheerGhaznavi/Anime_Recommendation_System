@@ -3,14 +3,31 @@ import streamlit as st
 import requests
 
 def fetch_poster(MAL_ID):
-    jikan_url = "https://api.jikan.moe/v4/anime/{}/pictures".format(MAL_ID)
+    jikan_url = "https://api.jikan.moe/v4/anime/{}".format(MAL_ID)
+        
     try:
-        data = requests.get(jikan_url, timeout=5).json()
-        poster_url = data['data'][0]["jpg"]["large_image_url"]
-    except (requests.RequestException, KeyError, IndexError, TypeError, ValueError):
-        return None
+        response = requests.get(jikan_url, timeout=5)
+
+        if response.status_code != 200:
+            try:
+                err = response.json()
+            except ValueError:
+                err = {}
+
+            status = err.get("status", response.status_code)
+            err_type = err.get("type", "HTTPError")
+            message = err.get("message", "Unknown API error")
+            return None, f"MAL_ID {MAL_ID} -> status={status}, type={err_type}, message={message}"
+
+        data = response.json()
+        poster_url = data["data"]["images"]["jpg"]["large_image_url"]
+        return poster_url, None
+
+    except requests.RequestException as e:
+        return None, f"MAL_ID {MAL_ID} -> request error: {e}"
+    except (KeyError, IndexError, TypeError, ValueError) as e:
+        return None, f"MAL_ID {MAL_ID} -> parse error: {e}"
     
-    return poster_url
 
 def recommend(anime):
     index = animes[animes['Name'] ==anime].index[0]
@@ -18,10 +35,20 @@ def recommend(anime):
     recommended_animes = []
     recommended_anime_posters = []
     count =0
+    continue_count =0
+    shown_errors = set()
     for i in distances[1:]:
+        if continue_count >= 20:
+            break
         mal_id = animes.iloc[i[0]].MAL_ID
-        url = fetch_poster(mal_id)
+        url, err = fetch_poster(mal_id)
+
+        if err and err not in shown_errors and len(shown_errors) < 3:
+            st.warning(err)
+            shown_errors.add(err)
+
         if not url:
+            continue_count +=1
             continue
         count+=1
         recommended_anime_posters.append(url)
@@ -43,7 +70,12 @@ selected_anime = st.selectbox(
 )
 
 if st.button('Show Recommendation'):
-    recommended_animes,recommended_anime_posters = recommend(selected_anime)
+    tup = recommend(selected_anime)
+    if not tup or not tup[0]:
+        st.warning('Could not fetch enough posters right now. Please try again.')
+        st.stop()
+    recommended_animes,recommended_anime_posters = tup[0], tup[1]
+    
     top_row_cols = st.columns(5)
     bottom_row_cols = st.columns(5)
 
@@ -59,4 +91,3 @@ if st.button('Show Recommendation'):
 
 
 
-    
