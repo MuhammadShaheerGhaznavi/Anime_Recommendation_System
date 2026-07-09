@@ -3,8 +3,9 @@
 !app.py
 anime_list.pkl
 similarity.pkl
-!requirements.txt
-!setup.sh
+anime_details.pkl
+anime_gallery.pkl
+eval.ipynb
+!script.py
 !JupyterCode.ipynb
-!Procfile
 misc.txt
