@@ -148,7 +148,7 @@ selected_anime_name = st.selectbox(
 ## Laying out the recommendations grid
 col1, col2 = st.columns([4, 1])
 with col1:
-    if st.button("Show Recommendation", use_container_width=True):
+    if st.button("Show Recommendation", width="stretch"):
         if selected_anime_name and selected_anime_name in anime_map:
             selected_mal_id = anime_map[selected_anime_name]
             
@@ -165,7 +165,7 @@ with col1:
             st.session_state["selected_rec"] = None
 
 with col2:
-    if st.button("⚙️ Filters", use_container_width=True):
+    if st.button("⚙️ Filters", width = "stretch"):
         st.session_state["filter_dialog_open"] = True
         st.rerun()
 
@@ -187,4 +187,4 @@ if st.session_state["recs"]:
                     st.session_state["dialog_open"] = True
                     st.rerun()
                 if rec.get("img_url"):
-                    st.image(rec["img_url"], use_container_width=True)
+                    st.image(rec["img_url"], width='stretch')
